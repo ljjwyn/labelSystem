@@ -67,4 +67,103 @@ public List<List<Integer>> levelOrder(ListNode root) {
         return res;
 }
 二叉树的左视图与右视图就可以基于这个list取头或者尾得到。
+3、线程交替打印1-100
+public class ThreadTest {
+    private static final Object lock = new Object();  //表示对象锁
+
+    private volatile int index = 1;
+
+    private volatile boolean aHasPrint = false;      //记录A是否被打印过
+
+    class A implements Runnable {
+        @Override
+        public void run() {
+            for (int i = 0; i < 50; i++) {
+                synchronized (lock) {
+                    while (aHasPrint) {
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    System.out.println("A:" + index);
+                    index++;
+                    aHasPrint = true;
+                    lock.notifyAll();
+                }
+            }
+        }
+    }
+
+    class B implements Runnable {
+        @Override
+        public void run() {
+            for (int i = 0; i < 50; i++) {
+                synchronized (lock) {
+                    while (!aHasPrint) {               //如果A没有打印过则阻塞
+                        try {
+                            lock.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    System.out.println("B:" + index);
+                    index++;
+                    aHasPrint = false;
+                    lock.notifyAll();
+                }
+            }
+        }
+    }
+
+
+    public static void main(String[] args) {
+        ThreadTest solution2 = new ThreadTest();
+        Thread threadA = new Thread(solution2.new A());
+        Thread threadB = new Thread(solution2.new B());
+        threadA.start();
+        threadB.start();
+    }
+}
+知识部分
+4、http与https
+    1、https协议需要到CA申请证书，一般免费证书较少，因而需要一定费用。
+    2、http是超文本传输协议，信息是明文传输，https则是具有安全性的ssl/tls加密传输协议。
+    3、http和https使用的是完全不同的连接方式，用的端口也不一样，前者是80，后者是443。
+    4、http的连接很简单，是无状态的；HTTPS协议是由SSL/TLS+HTTP协议构建的可进行加密传输、身份认证的网络协议，比http协议安全。
+    https的加解密过程是非对称秘钥的公钥私钥体系。
+5、cookie和session
+Session是在服务端保存的一个数据结构，用来跟踪用户的状态，这个数据可以保存在集群、数据库、文件中；
+Cookie是客户端保存用户信息的一种机制，用来记录用户的一些信息，也是实现Session的一种方式。
+上述两种技术的出现主要也是基于http是无状态的协议，每一次用户的请求需要识别用户之前的行为，在一定的程度上cookie存在于请求头中，其中会包含sessionid，sessionid去后端与存储的session进行校验。
+6、DNS
+DNS是 Domain Name System 的缩写，也就是 域名解析系统，它的作用非常简单，就是根据域名查出对应的 IP地址。
+    1、先查找本地 DNS 缓存（自己的电脑上），有则返回，没有则进入下一步
+    2、查看本地 hosts 文件有没有相应的映射记录，有则返回，没有则进入下一步
+    3、向本地 DNS 服务器（一般都是你的网络接入服务器商提供，比如中国电信，中国移动）发送请求进行查询，本地DNS服务器收到请求后，会先查下自己的缓存记录，如果查到了直接返回就结束了，如果没有查到，本地DNS服务器就会向DNS的根域名服务器发起查询请求：请问老大， www.163.com 的ip是啥？
+    4、根域名服务器收到请求后，看到这是个 .com 的域名，就回信说：这个域名是由 .com 老弟管理的，你去问他好了，这是.com老弟的联系方式（ip1）。
+    5、本地 DNS 服务器接收到回信后，照着老大哥给的联系方式（ip1），马上给 .com 这个顶级域名服务器发起请求：请问 .com 大大，www.163.com 的ip 是啥？
+    6、.com 顶级域名服务器接收到请求后，看到这是 163.com 的域名，就回信说：这个域名是 .163.com 老弟管理的，你就去问他就行了，这是他的联系方式（ip2）
+    7、本地 DNS 服务器接收到回信后，按照前辈的指引（ip2），又向 .163.com 这个权威域名服务器发起请求：请问 163.com 大大，请问 www.163.com 的ip是啥？
+    8、163.com 权威域名服务器接收到请求后，确认了是自己管理的域名，马上查了下自己的小本本，把 www.163.com 的ip告诉了 本地DNS服务器。
+    9、本地DNS服务器接收到回信后，非常地开心，这下总算拿到了www.163.com的ip了，马上把这个消息告诉了要求查询的客户（就是你的电脑）。由于这个过程比较漫长，本地DNS服务器为了节省时间，也为了尽量不去打扰各位老大哥，就把这个查询结果偷偷地记在了自己的小本本上，方便下次有人来查询时，可以快速回应。
+7、网关、网桥、api网关
+网关是一个三层的网络设备，网桥是二层，可以理解为少口交换机。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
